@@ -115,7 +115,7 @@ namespace CloneMifareCardWpf
             //listView_card.SelectedIndex = 0;
         }
 
-        public String NfcCall(string nfcrun, string Args, object sender)
+        public String NfcCall(string nfcrun, string Args)
         {
             string output = "";
             try
@@ -123,31 +123,37 @@ namespace CloneMifareCardWpf
                 string fileName = Environment.CurrentDirectory + "/Resources/" + nfcrun;
                 this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
                 {
-                    //(sender as Button).IsEnabled = false;
                     controlContainer.IsEnabled = false;
                     textBox_log.AppendText($"{fileName} {Args}\n");
                 }));
-                Process process = new Process
+                ProcessStartInfo startInfo = new ProcessStartInfo()
                 {
-                    StartInfo ={
                     CreateNoWindow=true,
                     UseShellExecute=false,
                     RedirectStandardOutput=true,
                     FileName=fileName,
                     Arguments=Args
-                }
                 };
-                process.Start();
-                while (!process.HasExited)
+                Process process = Process.Start(startInfo);
+                process.OutputDataReceived += (sender, e) => this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
                 {
-                    output = process.StandardOutput.ReadToEnd();
-                    this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
-                    {
-                        textBox_log.AppendText(output + "\n");
-                        UpdateListView();
-                    }));
-                }
+                    textBox_log.AppendText(e.Data + "\n");
+                }));
+                process.BeginOutputReadLine();
                 process.WaitForExit();
+                // We may not have received all the events yet!
+                Thread.Sleep(1000);
+                
+                //while (!process.HasExited)
+                //{
+                //    output = process.StandardOutput.ReadToEnd();
+                //    this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+                //    {
+                //        textBox_log.AppendText(output + "\n");
+                //        UpdateListView();
+                //    }));
+                //}
+                //process.WaitForExit();
                 //Log.WriteLog(output);
             }
             catch (Exception ex)
@@ -160,19 +166,19 @@ namespace CloneMifareCardWpf
             }
             this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
             {
-                //(sender as Button).IsEnabled = true;
                 controlContainer.IsEnabled = true;
+                UpdateListView();
                 listView_card.Focus();
             }));
             return output;
         }
 
-        public void NfcCallAsync(string nfcrun, string Args, object sender)
+        public void NfcCallAsync(string nfcrun, string Args)
         {
             try
             {
                 //Asynchronously start the Thread to process the Execute command request.
-                Thread objThread = new Thread(() => NfcCall(nfcrun, Args, sender));
+                Thread objThread = new Thread(() => NfcCall(nfcrun, Args));
                 //Make the thread as background thread.
                 objThread.IsBackground = true;
                 //Set the Priority of the thread.
@@ -199,17 +205,17 @@ namespace CloneMifareCardWpf
 
         private void button_checkDevice_Click(object sender, RoutedEventArgs e)
         {
-            NfcCallAsync("nfc-list", "", sender);
+            NfcCallAsync("nfc-list", "");
         }
 
         private void button_read_Click(object sender, RoutedEventArgs e)
         {
-            NfcCallAsync("nfc-mfclassic", $"r a Resources/mfd/{textBox_readFileName.Text} Resources/mfd/ive_key.mfd f", sender);
+            NfcCallAsync("nfc-mfclassic", $"r a Resources/mfd/{textBox_readFileName.Text} Resources/mfd/ive_key.mfd f");
         }
 
         private void button_write_Click(object sender, RoutedEventArgs e)
         {
-            NfcCallAsync("nfc-mfclassic", $"W a Resources/mfd/{textBox_writeFileName.Text} Resources/mfd/ive_key.mfd f", sender);
+            NfcCallAsync("nfc-mfclassic", $"W a Resources/mfd/{textBox_writeFileName.Text} Resources/mfd/ive_key.mfd f");
         }
 
         private void listView_card_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -258,6 +264,11 @@ namespace CloneMifareCardWpf
                 }
             }
             UpdateListView();
+        }
+
+        private void button_mfoc_Click(object sender, RoutedEventArgs e)
+        {
+            NfcCallAsync("mfoc", $"-O Resources/mfd/{textBox_readFileName.Text}");
         }
     }
 

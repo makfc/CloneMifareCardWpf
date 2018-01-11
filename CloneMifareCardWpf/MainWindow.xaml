@@ -9,12 +9,13 @@
     <Grid>
         <Grid x:Name="controlContainer">
             <Button x:Name="button_checkDevice" Content="Check Device (nfc-list)" HorizontalAlignment="Left" VerticalAlignment="Top" Width="233" Height="30" Click="button_checkDevice_Click" Margin="10,10,0,0"/>
-            <GroupBox x:Name="groupBox" Header="Step 1" HorizontalAlignment="Left" Height="105" VerticalAlignment="Top" Width="233" Margin="10,85,0,0">
+            <GroupBox x:Name="groupBox" Header="Step 1" HorizontalAlignment="Left" Height="239" VerticalAlignment="Top" Width="233" Margin="10,45,0,0">
                 <Grid>
                     <Label x:Name="label" Content="File Name:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
                     <TextBox x:Name="textBox_readFileName" HorizontalAlignment="Left" Height="23" Margin="84,12,0,0" TextWrapping="Wrap" Text="temp.mfd" VerticalAlignment="Top" Width="127"/>
 
-                    <Button x:Name="button_read" Content="Read Card to MiFare Dump ->" HorizontalAlignment="Left" Margin="10,43,0,0" VerticalAlignment="Top" Width="200" Click="button_read_Click" Height="36"/>
+                    <Button x:Name="button_read" Content="Read Card to MiFare Dump (r) ->" HorizontalAlignment="Left" Margin="10,43,0,0" VerticalAlignment="Top" Width="200" Click="button_read_Click" Height="36"/>
+                    <Button x:Name="button_unlockedRead" Content="Read Chinese Magic Blank Card&#xa;            to MiFare Dump (R) ->" HorizontalAlignment="Center" Margin="10,84,10,0" VerticalAlignment="Top" Width="201" Click="button_read_Click" Height="43"/>
                 </Grid>
             </GroupBox>
             <GroupBox x:Name="groupBox2" Header="Step 2" HorizontalAlignment="Left" Height="274" VerticalAlignment="Top" Width="969" Margin="248,10,0,0">
@@ -22,7 +23,7 @@
                     <Label x:Name="label2" Content="Selected File Name:" HorizontalAlignment="Center" Margin="299,176,538,0" VerticalAlignment="Top"/>
                     <TextBox x:Name="textBox_writeFileName" HorizontalAlignment="Center" Height="23" Margin="424,178,333,0" TextWrapping="Wrap" Text="temp.mfd" VerticalAlignment="Top" Width="200"/>
 
-                    <Button x:Name="button_write" Content="Write to Chinese Magic Card" HorizontalAlignment="Center" Margin="299,206,333,0" VerticalAlignment="Top" Width="325" Click="button_write_Click" Height="36" RenderTransformOrigin="0.5,0.5" IsDefault="True"/>
+                    <Button x:Name="button_write" Content="Write to Chinese Magic Card(W)" HorizontalAlignment="Center" Margin="299,206,333,0" VerticalAlignment="Top" Width="325" Click="button_write_Click" Height="36" RenderTransformOrigin="0.5,0.5" IsDefault="True"/>
                     <ListView x:Name="listView_card" Margin="10,10,10,81" SelectionChanged="listView_card_SelectionChanged" SelectionMode="Single" GridViewColumnHeader.Click="GridViewColumnHeaderClickedHandler" VerticalContentAlignment="Top">
                         <ListView.View>
                             <GridView>
@@ -53,6 +54,7 @@
                     <Button x:Name="button_openFolder" Content="Open MFD Folder" HorizontalAlignment="Right" Margin="0,176,10,0" VerticalAlignment="Top" Width="127" Height="36" Click="button_openFolder_Click"/>
                 </Grid>
             </GroupBox>
+            <Button x:Name="button_mfoc" Content="MFOC to MiFare Dump -&gt;" HorizontalAlignment="Left" Margin="26,237,0,0" VerticalAlignment="Top" Width="200" Click="button_mfoc_Click" Height="36"/>
         </Grid>
         <local:ScrollingTextBox x:Name="textBox_log" Margin="10,297,10,10" TextWrapping="Wrap" IsReadOnly="True" VerticalScrollBarVisibility="Auto"/>
     </Grid>
