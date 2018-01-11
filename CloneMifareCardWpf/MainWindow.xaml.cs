@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -26,43 +28,141 @@ namespace CloneMifareCardWpf
         public MainWindow()
         {
             InitializeComponent();
+
+            UpdateListView();
+        }
+        GridViewColumnHeader _lastHeaderClicked = null;
+        ListSortDirection _lastDirection = ListSortDirection.Ascending;
+
+        void GridViewColumnHeaderClickedHandler(object sender, RoutedEventArgs e)
+        {
+            GridViewColumnHeader headerClicked = e.OriginalSource as GridViewColumnHeader;
+            ListSortDirection direction;
+
+            if (headerClicked != null)
+            {
+                if (headerClicked.Role != GridViewColumnHeaderRole.Padding)
+                {
+                    if (headerClicked != _lastHeaderClicked)
+                    {
+                        direction = ListSortDirection.Ascending;
+                    }
+                    else
+                    {
+                        if (_lastDirection == ListSortDirection.Ascending)
+                        {
+                            direction = ListSortDirection.Descending;
+                        }
+                        else
+                        {
+                            direction = ListSortDirection.Ascending;
+                        }
+                    }
+
+                    string header = ((Binding)headerClicked.Column.DisplayMemberBinding).Path.Path;
+                    Sort(header, direction);
+
+                    _lastHeaderClicked = headerClicked;
+                    _lastDirection = direction;
+                }
+            }
+        }
+
+        private void Sort(string sortBy, ListSortDirection direction)
+        {
+            ICollectionView dataView =
+              CollectionViewSource.GetDefaultView(listView_card.ItemsSource);
+
+            dataView.SortDescriptions.Clear();
+            SortDescription sd = new SortDescription(sortBy, direction);
+            dataView.SortDescriptions.Add(sd);
+            dataView.Refresh();
+        }
+        public static readonly string mfdDirectory = Environment.CurrentDirectory + "/Resources/mfd/";
+
+        public void UpdateListView()
+        {
+            DirectoryInfo info = new DirectoryInfo(mfdDirectory);
+            FileInfo[] mfdFiles = info.GetFiles().Where(p => p.Name != "ive_key.mfd").OrderByDescending(p => p.LastWriteTime).ToArray();
+
+            List<Card> items = new List<Card>();
+
+            foreach (FileInfo file in mfdFiles)
+            {
+                string fileName = file.Name;
+                BinaryReader reader = new BinaryReader(new FileStream(mfdDirectory + fileName, FileMode.Open, FileAccess.Read, FileShare.None));
+
+                Card card = new Card();
+                card.FileName = fileName;
+                card.LastWriteTime = file.LastWriteTime;
+
+                reader.BaseStream.Position = 0x0;
+                card.UID = BitConverter.ToString(reader.ReadBytes(4)).Replace("-", "");
+
+                reader.BaseStream.Position = 0x200;
+                card.CampusId = Encoding.Default.GetString(reader.ReadBytes(2));
+
+                reader.BaseStream.Position = 0x202;
+                card.StudentId = Encoding.Default.GetString(reader.ReadBytes(9));
+
+                reader.BaseStream.Position = 0x20E;
+                card.ExpiryDate = Encoding.Default.GetString(reader.ReadBytes(8));
+                reader.Close();
+
+                items.Add(card);
+            }
+            listView_card.ItemsSource = items;
+            //listView_card.SelectedIndex = 0;
         }
 
         public String NfcCall(string nfcrun, string Args, object sender)
         {
-            string fileName = Environment.CurrentDirectory + "/Resources/" + nfcrun;
-            this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+            string output = "";
+            try
             {
-                //(sender as Button).IsEnabled = false;
-                controlContainer.IsEnabled = false;
-                textBox_log.AppendText($"{fileName} {Args}\n");
-            }));
-            Process process = new Process
-            {
-                StartInfo ={
+                string fileName = Environment.CurrentDirectory + "/Resources/" + nfcrun;
+                this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+                {
+                    //(sender as Button).IsEnabled = false;
+                    controlContainer.IsEnabled = false;
+                    textBox_log.AppendText($"{fileName} {Args}\n");
+                }));
+                Process process = new Process
+                {
+                    StartInfo ={
                     CreateNoWindow=true,
                     UseShellExecute=false,
                     RedirectStandardOutput=true,
                     FileName=fileName,
                     Arguments=Args
                 }
-            };
-            process.Start();
-            string output = "";
-            while (!process.HasExited)
+                };
+                process.Start();
+                while (!process.HasExited)
+                {
+                    output = process.StandardOutput.ReadToEnd();
+                    this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+                    {
+                        textBox_log.AppendText(output + "\n");
+                        UpdateListView();
+                    }));
+                }
+                process.WaitForExit();
+                //Log.WriteLog(output);
+            }
+            catch (Exception ex)
             {
-                output = process.StandardOutput.ReadToEnd();
+                // Log the exception
                 this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
                 {
-                    textBox_log.AppendText(output + "\n");
+                    textBox_log.AppendText(ex.Message + "\n");
                 }));
             }
-            process.WaitForExit();
-            //Log.WriteLog(output);
             this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
             {
                 //(sender as Button).IsEnabled = true;
                 controlContainer.IsEnabled = true;
+                listView_card.Focus();
             }));
             return output;
         }
@@ -111,7 +211,66 @@ namespace CloneMifareCardWpf
         {
             NfcCallAsync("nfc-mfclassic", $"W a Resources/mfd/{textBox_writeFileName.Text} Resources/mfd/ive_key.mfd f", sender);
         }
+
+        private void listView_card_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                textBox_writeFileName.Text = (listView_card.SelectedItem as Card).FileName;
+            }
+            catch { }
+        }
+
+        private void button_openFolder_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start(mfdDirectory);
+        }
+
+        private void Button_edit_Click(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            Card card = button.DataContext as Card;
+            EditMfdFileWindow newWindow = new EditMfdFileWindow(card);
+            newWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            newWindow.DataContext = this;
+            newWindow.ShowDialog();
+            UpdateListView();
+        }
+
+        private void Button_delete_Click(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            Card card = button.DataContext as Card;
+            // Delete a file by using File class static method...
+            if (File.Exists(mfdDirectory + card.FileName))
+            {
+                // Use a try block to catch IOExceptions, to
+                // handle the case of the file already being
+                // opened by another process.
+                try
+                {
+                    File.Delete(mfdDirectory + card.FileName);
+                }
+                catch (IOException ex)
+                {
+                    textBox_log.AppendText(ex.Message + "\n");
+                    return;
+                }
+            }
+            UpdateListView();
+        }
     }
+
+    public class Card
+    {
+        public string FileName { get; set; }
+        public DateTime LastWriteTime { get; set; }
+        public string UID { get; set; }
+        public string CampusId { get; set; }
+        public string StudentId { get; set; }
+        public string ExpiryDate { get; set; }
+    }
+
 
     public class ScrollingTextBox : TextBox
     {
