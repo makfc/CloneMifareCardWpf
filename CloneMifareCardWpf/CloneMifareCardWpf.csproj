@@ -96,6 +96,9 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <None Include="Resources\mfd\blank.mfd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Resources\mfd\ive_key.mfd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
