@@ -15,7 +15,7 @@
                     <TextBox x:Name="textBox_readFileName" HorizontalAlignment="Left" Height="23" Margin="84,12,0,0" TextWrapping="Wrap" Text="temp.mfd" VerticalAlignment="Top" Width="127"/>
 
                     <Button x:Name="button_read" Content="Read Card to MiFare Dump (r) ->" HorizontalAlignment="Left" Margin="10,43,0,0" VerticalAlignment="Top" Width="200" Click="button_read_Click" Height="36"/>
-                    <Button x:Name="button_unlockedRead" Content="Read Chinese Magic Blank Card&#xa;            to MiFare Dump (R) ->" HorizontalAlignment="Center" Margin="10,84,10,0" VerticalAlignment="Top" Width="201" Click="button_read_Click" Height="43"/>
+                    <Button x:Name="button_unlockedRead" Content="Read Chinese Magic Blank Card&#xa;            to MiFare Dump (R) ->" HorizontalAlignment="Center" Margin="10,84,10,0" VerticalAlignment="Top" Width="201" Click="button_unlocked_read_Click" Height="43"/>
                 </Grid>
             </GroupBox>
             <GroupBox x:Name="groupBox2" Header="Step 2" HorizontalAlignment="Left" Height="274" VerticalAlignment="Top" Width="969" Margin="248,10,0,0">
