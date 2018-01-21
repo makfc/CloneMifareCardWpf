@@ -223,6 +223,11 @@ namespace CloneMifareCardWpf
             NfcCallAsync("nfc-mfclassic", $"W a Resources/mfd/{textBox_writeFileName.Text} Resources/mfd/ive_key.mfd f");
         }
 
+        private void button_NormalWrite_Click(object sender, RoutedEventArgs e)
+        {
+            NfcCallAsync("nfc-mfclassic", $"w a Resources/mfd/{textBox_writeFileName.Text} Resources/mfd/ive_key.mfd f");
+        }
+
         private void listView_card_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
@@ -275,6 +280,8 @@ namespace CloneMifareCardWpf
         {
             NfcCallAsync("mfoc", $"-O Resources/mfd/{textBox_readFileName.Text}");
         }
+
+
     }
 
     public class Card
