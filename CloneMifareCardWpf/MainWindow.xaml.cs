@@ -210,22 +210,22 @@ namespace CloneMifareCardWpf
 
         private void button_read_Click(object sender, RoutedEventArgs e)
         {
-            NfcCallAsync("nfc-mfclassic", $"r a Resources/mfd/{textBox_readFileName.Text} Resources/mfd/ive_key.mfd f");
+            NfcCallAsync("nfc-mfclassic", $"r a \"Resources/mfd/{textBox_readFileName.Text}\" \"Resources/mfd/ive_key.mfd\" f");
         }
 
         private void button_unlocked_read_Click(object sender, RoutedEventArgs e)
         {
-            NfcCallAsync("nfc-mfclassic", $"R a Resources/mfd/{textBox_readFileName.Text} Resources/mfd/ive_key.mfd f");
+            NfcCallAsync("nfc-mfclassic", $"R a \"Resources/mfd/{textBox_readFileName.Text}\" \"Resources/mfd/ive_key.mfd\" f");
         }
 
         private void button_write_Click(object sender, RoutedEventArgs e)
         {
-            NfcCallAsync("nfc-mfclassic", $"W a Resources/mfd/{textBox_writeFileName.Text} Resources/mfd/ive_key.mfd f");
+            NfcCallAsync("nfc-mfclassic", $"W a \"Resources/mfd/{textBox_writeFileName.Text}\" \"Resources/mfd/ive_key.mfd\" f");
         }
 
         private void button_NormalWrite_Click(object sender, RoutedEventArgs e)
         {
-            NfcCallAsync("nfc-mfclassic", $"w a Resources/mfd/{textBox_writeFileName.Text} Resources/mfd/ive_key.mfd f");
+            NfcCallAsync("nfc-mfclassic", $"w a \"Resources/mfd/{textBox_writeFileName.Text}\" \"Resources/mfd/ive_key.mfd\" f");
         }
 
         private void listView_card_SelectionChanged(object sender, SelectionChangedEventArgs e)

@@ -37,26 +37,45 @@ namespace CloneMifareCardWpf
 
         public static byte[] StringToByteArray(string hex)
         {
+            if (hex.Length % 2 == 1)
+                throw new Exception("The binary key cannot have an odd number of digits");
+
             return Enumerable.Range(0, hex.Length)
                              .Where(x => x % 2 == 0)
                              .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
                              .ToArray();
         }
 
+        public static byte CalcBCC(byte[] uid)
+        {
+            if (uid.Length != 4)
+                throw new Exception("UID length is not 4 bytes.");
+
+            byte bcc = uid[0];
+            for (int i = 1; i < uid.Length; i++)
+                bcc = (byte)(bcc ^ uid[i]);
+
+            return bcc;
+        }
+
         private void button_save_Click(object sender, RoutedEventArgs e)
         {
-            byte[] uid = StringToByteArray(textBox_UID.Text);
-            byte[] campusId = Encoding.ASCII.GetBytes(textBox_CampusId.Text);
-            byte[] studentId = Encoding.ASCII.GetBytes(textBox_StudentId.Text);
-            byte[] expiryDate = Encoding.ASCII.GetBytes(textBox_ExpiryDate.Text);
-
             try
             {
+                byte[] uid = StringToByteArray(textBox_UID.Text);
+                byte bcc = CalcBCC(uid);
+                byte[] campusId = Encoding.ASCII.GetBytes(textBox_CampusId.Text);
+                byte[] studentId = Encoding.ASCII.GetBytes(textBox_StudentId.Text);
+                byte[] expiryDate = Encoding.ASCII.GetBytes(textBox_ExpiryDate.Text);
+
+
                 File.Move(MainWindow.mfdDirectory + card.FileName, MainWindow.mfdDirectory + textBox_FileName.Text);
                 using (var stream = new FileStream(MainWindow.mfdDirectory + textBox_FileName.Text, FileMode.Open, FileAccess.ReadWrite))
                 {
                     stream.Seek(0x0, SeekOrigin.Begin);
                     stream.Write(uid, 0, 4);
+
+                    stream.WriteByte(bcc);
 
                     stream.Seek(0x200, SeekOrigin.Begin);
                     stream.Write(campusId, 0, 2);
